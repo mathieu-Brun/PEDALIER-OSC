@@ -1,5 +1,5 @@
     //===========================================================================
-    //  Serveur internet avec un shield Ethernet-W5100 et une carte Arduino UNO
+    //  Serveur avec shield Ethernet-W5100 et carte Arduino UNO
     //  DANS LE CADRE DU PROJET TUTORE DE JORDAN DESBUQUOIT ET MATHIEU BRUN 
     //  LICENCE SYRDES 2014/2015
     //
