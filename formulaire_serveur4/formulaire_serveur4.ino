@@ -10,41 +10,44 @@
 
     #include <SPI.h>
     #include <Ethernet.h>   //Inclure la bibliothèque Ethernet
-    #define MaxHeaderLength 24
+    #define MaxHeaderLength 120
     #include <SD.h>
+    char c;
+
     
-    EthernetServer serverConf(80);    //Initialise le serveur Ethernet, port 80 par défaut pour HTTP
+    EthernetServer serverConf(80);    //Initialise le serveur Ethernet Web, port 80 par défaut pour HTTP
     EthernetServer serverOsc(5678);    //Initialise le serveur Ethernet Osc, port 5678
     
     // Adresse MAC du shield (ici choisie par défaut), l'adresse IP dépend de votre réseau local
-    // Attention l'adresse mac doit tre unique sur le réseau !  
+    // Attention l'adresse mac doit tre unique sur le réseau !
     byte mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0x2E, 0x5D }; 
-    IPAddress ip(10,10,10,3);   
-    byte subnet[] = {255, 0, 0, 0 };  //masque de sous réseau
+    IPAddress ip(10,10,10,2);   
+    byte subnet[] = {255, 255, 0, 0 };  //masque de sous réseau
     //L'adresse MAC du shield est associée à une adresse IP dans la livebox (DHCP)
 
     
+   String HttpHeader = ""; //initialise la chaine HttpHeader
     
-    String HttpHeader = ""; //initialise une chaine HttpHeader 
-   
    File myFile; // objet file 
    char dirName[]="/monrep"; // tableau de caracteres pour le nom du répertoire
     // nom du fichier court (8 caractères maxi . 3 caractères maxi) (dit format DOS 8.3)
    char fileName[] = "test.txt"; // tableau de caractères pour le nom du fichier
    char pathFile[] = "/monrep/test.txt"; // tableau de caractères pour le nom du fichier
    int test; //variable mémorisation résultat renvoyé par fonctions
+
+
+
    
     void setup()
-   
     {
       //Affichage sur PC via console USB
-      Serial.begin(9600);        
+      Serial.begin(9600);
       
       // laisser la broche SS (select ethernet) en sortie - obligatoire avec librairie SD
-      pinMode(10, OUTPUT);    
+      pinMode(10, OUTPUT);
       
       //Démarrage du Server Web
-      Ethernet.begin(mac, ip);     //Démarer la connexion Ethernet et le serveur
+      Ethernet.begin(mac, ip);     //Démarer la connexion Ethernet
       
       if (true) {
         serverConf.begin();
@@ -56,7 +59,7 @@
         }
       
       //initialisation de la carte SD avec broche 4
-      SD.begin(4); 
+      SD.begin(4);
       if (!SD.exists(pathFile)) {
         Serial.println("Pas de carte SD inseree ou mauvais nom de fichier");
       }
@@ -66,8 +69,6 @@
       
       //Fin du Setup
       Serial.println("Arduino initialise");
-      
-      
 }
 
     void loop()
@@ -79,9 +80,14 @@
         boolean currentLineIsBlank = true; // Une requète HTTP terminée par une ligne vide
         while (client.connected()) {
           if (client.available()) {
-            char c = client.read();
+            if ( c != '&'){
+             c = client.read();
             //SD.remove(pathFile); // efface le fichier  prééxistant
              //discard the rest until \n
+            }
+            else if (c == '&'){
+              c = '\n';
+            }
          if (HttpHeader.length() < MaxHeaderLength)
          {
            //store characters to string
@@ -100,11 +106,15 @@
               client.println();
               client.print("<form>");
               client.print("load:");
-              client.print("<br>");
-              client.print("<input type=\"text\" name=\"load\">");//les antislashs permettent d'échaper les guillemets car la fonction print necessite une certaine synthaxe et ceux-ci créraient une erreur de compilation
-              client.print("<br>");
-              client.print("<input type=\"submit\" value=\"Submit\">");
+              client.print("<br/>");
+              client.print("<input type=\"text\" name=\"load\"/>");//les antislashs permettent d'échaper les guillemets car la fonction print necessite une certaine synthaxe et ceux-ci créraient une erreur de compilation
+              client.print("<br/>");
+              client.print("<input type=\"text\" name=\"load\"/>");//les antislashs permettent d'échaper les guillemets car la fonction print necessite une certaine synthaxe et ceux-ci créraient une erreur de compilation
+              client.print("<br/>");
+              client.print("<input type=\"submit\" value=\"Submit\"/>");
               client.print("</form>");
+
+              
               
               
               myFile=SD.open(pathFile,FILE_WRITE);
